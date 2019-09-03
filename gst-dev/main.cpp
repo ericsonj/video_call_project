@@ -17,13 +17,15 @@ int main(int argc, char** argv) {
 
     gst_init(&argc, &argv);
 
-     gchar *descr = g_strdup(
-        "udpsrc port=55000 "
-        "! application/x-rtp, payload=96 ! rtph264depay ! h264parse ! avdec_h264 "
-        "! decodebin ! videoconvert ! video/x-raw,format=(string)BGR ! videoconvert "
-        "! appsink name=sink emit-signals=true sync=false max-buffers=1 drop=true"
-    );
+//    gchar *descr = g_strdup(
+//        "udpsrc port=55000 "
+//        "! application/x-rtp, payload=96 ! rtph264depay ! h264parse ! avdec_h264 "
+//        "! decodebin ! videoconvert ! video/x-raw,format=(string)BGR ! videoconvert "
+//        "! appsink name=sink emit-signals=true sync=false max-buffers=1 drop=true"
+//    );
 
+    gchar *descr = g_strdup("udpsrc port=55000 caps = \"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)VP8, payload=(int)96, a-framerate=(string)30\" ! rtpvp8depay ! vp8dec ! videoconvert ! autovideosink");
+    
     GError *error = nullptr;
 
     pipeline = gst_parse_launch(descr, &error);
