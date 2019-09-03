@@ -11,28 +11,44 @@
 
 int main(int argc, char** argv) {
 
-    //    GstElement *pipeline;
-    //    GstBus *bus;
-    //    GstMessage *msg;
-    //
-    //    gst_init(&argc, &argv);
-    //
-    //    pipeline = gst_parse_launch("playbin uri=https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm", NULL);
-    //
-    //    gst_element_set_state(pipeline, GST_STATE_PLAYING);
-    //
-    //    bus = gst_element_get_bus(pipeline);
-    //
-    //    msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE, (GstMessageType) (GST_MESSAGE_ERROR | GST_MESSAGE_EOS));
-    //
-    //    if (msg != NULL)
-    //        gst_message_unref(msg);
-    //    gst_object_unref(bus);
-    //    gst_element_set_state(pipeline, GST_STATE_NULL);
-    //    gst_object_unref(pipeline);
-    //
-    //    return 0;
+    GstElement *pipeline;
+    GstBus *bus;
+    GstMessage *msg;
 
+    gst_init(&argc, &argv);
+
+     gchar *descr = g_strdup(
+        "udpsrc port=55000 "
+        "! application/x-rtp, payload=96 ! rtph264depay ! h264parse ! avdec_h264 "
+        "! decodebin ! videoconvert ! video/x-raw,format=(string)BGR ! videoconvert "
+        "! appsink name=sink emit-signals=true sync=false max-buffers=1 drop=true"
+    );
+
+    GError *error = nullptr;
+
+    pipeline = gst_parse_launch(descr, &error);
+
+    if (error) {
+        g_print("could not construct pipeline: %s\n", error->message);
+        g_error_free(error);
+        exit(-1);
+    }
+
+    gst_element_set_state(pipeline, GST_STATE_PLAYING);
+
+    bus = gst_element_get_bus(pipeline);
+
+    msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE, (GstMessageType) (GST_MESSAGE_ERROR | GST_MESSAGE_EOS));
+
+    if (msg != NULL)
+        gst_message_unref(msg);
+    gst_object_unref(bus);
+    gst_element_set_state(pipeline, GST_STATE_NULL);
+    gst_object_unref(pipeline);
+
+    return 0;
+
+#if 0
     GstElement *pipeline, *source, *sink;
     GstBus *bus;
     GstMessage *msg;
@@ -70,8 +86,8 @@ int main(int argc, char** argv) {
 
     /* Wait until error or EOS */
     bus = gst_element_get_bus(pipeline);
-    msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE, (GstMessageType)(GST_MESSAGE_ERROR | GST_MESSAGE_EOS));
-    
+    msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE, (GstMessageType) (GST_MESSAGE_ERROR | GST_MESSAGE_EOS));
+
     /* Parse message */
     if (msg != NULL) {
         GError *err;
@@ -100,6 +116,8 @@ int main(int argc, char** argv) {
     gst_object_unref(bus);
     gst_element_set_state(pipeline, GST_STATE_NULL);
     gst_object_unref(pipeline);
+
+#endif
 
     return 0;
 
